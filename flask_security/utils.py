@@ -17,7 +17,8 @@ import warnings
 from contextlib import contextmanager
 from datetime import timedelta
 
-from flask import current_app, flash, request, session, url_for
+from flask import current_app, flash, render_template, request, session, \
+    url_for
 from flask_login import login_user as _login_user
 from flask_login import logout_user as _logout_user
 from flask_mail import Message
@@ -382,19 +383,15 @@ def send_mail(subject, recipient, template, **context):
     context.setdefault('security', _security)
     context.update(_security._run_ctx_processor('mail'))
 
-    sender = _security.email_sender
-    if isinstance(sender, LocalProxy):
-        sender = sender._get_current_object()
-
     msg = Message(subject,
-                  sender=sender,
+                  sender=_security.email_sender,
                   recipients=[recipient])
 
     ctx = ('security/email', template)
     if config_value('EMAIL_PLAINTEXT'):
-        msg.body = _security.render_template('%s/%s.txt' % ctx, **context)
+        msg.body = render_template('%s/%s.txt' % ctx, **context)
     if config_value('EMAIL_HTML'):
-        msg.html = _security.render_template('%s/%s.html' % ctx, **context)
+        msg.html = render_template('%s/%s.html' % ctx, **context)
 
     if _security._send_mail_task:
         _security._send_mail_task(msg)
@@ -450,16 +447,17 @@ def get_identity_attributes(app=None):
 
 def use_double_hash(password_hash=None):
     """Return a bool indicating whether a password should be hashed twice."""
-    # Default to plaintext for backward compatibility with
-    # SECURITY_PASSWORD_SINGLE_HASH = False
-    single_hash = config_value('PASSWORD_SINGLE_HASH') or {'plaintext'}
+    single_hash = config_value('PASSWORD_SINGLE_HASH')
+    if single_hash and _security.password_salt:
+        raise RuntimeError('You may not specify a salt with '
+                           'SECURITY_PASSWORD_SINGLE_HASH')
 
     if password_hash is None:
-        scheme = _security.password_hash
+        is_plaintext = _security.password_hash == 'plaintext'
     else:
-        scheme = _pwd_context.identify(password_hash)
+        is_plaintext = _pwd_context.identify(password_hash) == 'plaintext'
 
-    return not (single_hash is True or scheme in single_hash)
+    return not (is_plaintext or single_hash)
 
 
 @contextmanager

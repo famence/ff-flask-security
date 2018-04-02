@@ -20,7 +20,7 @@ from wtforms import BooleanField, Field, HiddenField, PasswordField, \
     StringField, SubmitField, ValidationError, validators
 
 from .confirmable import requires_confirmation
-from .utils import _, _datastore, config_value, get_message, hash_password, \
+from .utils import _, _datastore, config_value, get_message, \
     localize_callback, url_for_security, validate_redirect_url, \
     verify_and_update_password
 
@@ -154,7 +154,7 @@ class RegisterFormMixin():
 
 
 class SendConfirmationForm(Form, UserEmailFormMixin):
-    """The default send confirmation form"""
+    """The default forgot password form"""
 
     submit = SubmitField(get_form_field_label('send_confirmation'))
 
@@ -234,13 +234,9 @@ class LoginForm(Form, NextFormMixin):
 
         if self.user is None:
             self.email.errors.append(get_message('USER_DOES_NOT_EXIST')[0])
-            # Reduce timing variation between existing and non-existung users
-            hash_password(self.password.data)
             return False
         if not self.user.password:
             self.password.errors.append(get_message('PASSWORD_NOT_SET')[0])
-            # Reduce timing variation between existing and non-existung users
-            hash_password(self.password.data)
             return False
         if not verify_and_update_password(self.password.data, self.user):
             self.password.errors.append(get_message('INVALID_PASSWORD')[0])

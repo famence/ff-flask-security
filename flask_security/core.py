@@ -302,12 +302,7 @@ def _get_pwd_context(app):
 
 
 def _get_i18n_domain(app):
-    domain = cv('I18N_DOMAIN', app=app)
-    print(dir(domain))
-    print(domain.domain)
-    print(domain.dirname)
-    print(domain.gettext('Account is disabled.'))
-    return domain
+    return cv('I18N_DOMAIN', app=app)
 
 
 def _get_hashing_context(app):

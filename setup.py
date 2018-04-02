@@ -59,15 +59,15 @@ install_requires = [
 packages = find_packages()
 
 setup(
-    name='Flask-Security',
-    version='3.0.0',
+    name='FF-Flask-Security',
+    version='3.0.2',
     description=__doc__,
-    long_description=readme,
+    long_description='Fork of Matt Wright\'s original Flask-Security module: https://github.com/mattupstate/flask-security',
     keywords='flask security',
     license='MIT',
-    author='Matt Wright',
-    author_email='matt@nobien.net',
-    url='https://github.com/mattupstate/flask-security',
+    author='Andrey Madzhidov',
+    author_email='famence@yandex.ru',
+    url='https://github.com/famence/ff-flask-security',
     packages=packages,
     zip_safe=False,
     include_package_data=True,
